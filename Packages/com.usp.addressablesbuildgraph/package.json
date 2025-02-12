@@ -1,0 +1,10 @@
+{
+  "name": "com.usp.addressablesbuildgraph",
+  "displayName": "Addressables Build Graph",
+  "version": "0.0.1",
+  "unity": "6000.0",
+  "dependencies": {
+  },
+  "category": "Framework",
+  "type": "library"
+}
