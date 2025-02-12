@@ -41,7 +41,7 @@ namespace USP.AddressablesBuildGraph
             bool explicitAsset = assetGuidsToArchiveFile.ContainsKey(assetGuid);
 
             // If the asset was implicitly pulled into this build, then:
-            if (explicitAsset)
+            if (!explicitAsset)
             {
                 // Create a new instance of the info that defines a non-Addressable asset.
                 return new AssetInfo(assetGuid);
