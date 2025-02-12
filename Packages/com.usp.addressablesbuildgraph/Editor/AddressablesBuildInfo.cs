@@ -34,11 +34,9 @@ namespace USP.AddressablesBuildGraph
     public class AddressablesBuildInfo
     {
         #region Static Methods
-        public static void Create(AddressableAssetsBuildContext aaBuildContext,
-            IBundleWriteData bundleWriteData,
-            out AddressablesBuildInfo buildInfo)
+        public static AddressablesBuildInfo Create(AddressableAssetsBuildContext aaBuildContext, IBundleWriteData bundleWriteData)
         {
-            buildInfo = new AddressablesBuildInfo();
+            var buildInfo = new AddressablesBuildInfo();
 
             using (Dictionary<string, string>.ValueCollection.Enumerator bundleNameEnumerator = bundleWriteData.FileToBundle.Values.GetEnumerator())
             using (Dictionary<string, List<ObjectIdentifier>>.ValueCollection.Enumerator objectIdentifierEnumerator = bundleWriteData.FileToObjects.Values.GetEnumerator())
@@ -120,6 +118,8 @@ namespace USP.AddressablesBuildGraph
             }
 
             AssetInfo.PopulateAssetDependencyGraph(buildInfo.Assets);
+
+            return buildInfo;
         }
         #endregion
 
