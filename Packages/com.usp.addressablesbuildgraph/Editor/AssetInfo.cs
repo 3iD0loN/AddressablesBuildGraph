@@ -142,6 +142,8 @@ namespace USP.AddressablesBuildGraph
 
         public HashSet<AssetInfo> AssetDependencies { get; }
 
+        public bool IsDuplicate => Bundles.Count > 1;
+
         /// <summary>
         /// Gets a unique set of all asset bundles that this asset is packed into.
         /// </summary>
