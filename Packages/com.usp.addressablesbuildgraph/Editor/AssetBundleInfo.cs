@@ -29,86 +29,87 @@ using NUnit.Framework;
 using static UnityEditor.AddressableAssets.Build.Layout.BuildLayout;
 using UnityEngine.Assertions;
 
-#region Types
-class AssetBundleInfo : IEqualityComparer<AssetBundleInfo>
+namespace USP.AddressablesBuildGraph
 {
-    #region Static Methods
-    public static bool operator ==(AssetBundleInfo leftHand, AssetBundleInfo rightHand)
+    class AssetBundleInfo : IEqualityComparer<AssetBundleInfo>
     {
-        var lhs = (object)leftHand;
-        var rhs = (object)rightHand;
-
-        if (lhs == rhs)
+        #region Static Methods
+        public static bool operator ==(AssetBundleInfo leftHand, AssetBundleInfo rightHand)
         {
-            return true;
+            var lhs = (object)leftHand;
+            var rhs = (object)rightHand;
+
+            if (lhs == rhs)
+            {
+                return true;
+            }
+
+            if (rhs == null || lhs == null)
+            {
+                return false;
+            }
+
+            return string.Compare(leftHand.assetBundleName, rightHand.assetBundleName, StringComparison.Ordinal) == 0;
         }
 
-        if (rhs == null || lhs == null)
+        public static bool operator !=(AssetBundleInfo lhs, AssetBundleInfo rhs)
         {
-            return false;
+            return !(lhs == rhs);
+        }
+        #endregion
+
+        #region Properties
+        public string assetBundleName { get; }
+
+        //public string assetBundleVariant { get; }
+
+        /// <summary>
+        /// Gets a unique set of all assets that are packed into a bundle.
+        /// </summary>
+        public HashSet<AssetInfo> Assets { get; }
+
+        /// <summary>
+        /// Gets the Addressbles group used to generate the asset bundle.
+        /// </summary>
+        public GroupInfo Group { get; set; }
+        #endregion
+
+        #region Methods
+        public AssetBundleInfo(string assetBundleName)
+        {
+            this.assetBundleName = assetBundleName;
+            this.Assets = new HashSet<AssetInfo>();
         }
 
-        return string.Compare(leftHand.assetBundleName, rightHand.assetBundleName, StringComparison.Ordinal) == 0;
-    }
-
-    public static bool operator !=(AssetBundleInfo lhs, AssetBundleInfo rhs)
-    {
-        return !(lhs == rhs);
-    }
-    #endregion
-
-    #region Properties
-    public string assetBundleName { get; }
-
-    //public string assetBundleVariant { get; }
-
-    /// <summary>
-    /// Gets a unique set of all assets that are packed into a bundle.
-    /// </summary>
-    public HashSet<AssetInfo> Assets { get; }
-
-    /// <summary>
-    /// Gets the Addressbles group used to generate the asset bundle.
-    /// </summary>
-    public GroupInfo Group { get; set; }
-    #endregion
-
-    #region Methods
-    public AssetBundleInfo(string assetBundleName)
-    {
-        this.assetBundleName = assetBundleName;
-        this.Assets = new HashSet<AssetInfo>();
-    }
-
-    public override int GetHashCode()
-    {
-        return assetBundleName.GetHashCode();
-    }
-
-    public override bool Equals(object other)
-    {
-        if (other is not AssetBundleInfo assetBundle)
+        public override int GetHashCode()
         {
-            return false;
+            return assetBundleName.GetHashCode();
         }
 
-        return this == assetBundle;
-    }
+        public override bool Equals(object other)
+        {
+            if (other is not AssetBundleInfo assetBundle)
+            {
+                return false;
+            }
 
-    public int GetHashCode(AssetBundleInfo obj)
-    {
-        return obj.GetHashCode();
-    }
+            return this == assetBundle;
+        }
 
-    public bool Equals(AssetBundleInfo lhs, AssetBundleInfo rhs)
-    {
-        return lhs == rhs;
-    }
+        public int GetHashCode(AssetBundleInfo obj)
+        {
+            return obj.GetHashCode();
+        }
 
-    public override string ToString()
-    {
-        return assetBundleName;
+        public bool Equals(AssetBundleInfo lhs, AssetBundleInfo rhs)
+        {
+            return lhs == rhs;
+        }
+
+        public override string ToString()
+        {
+            return assetBundleName;
+        }
+        #endregion
     }
-    #endregion
 }
-#endregion

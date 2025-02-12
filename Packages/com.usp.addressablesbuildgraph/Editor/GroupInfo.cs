@@ -29,92 +29,95 @@ using NUnit.Framework;
 using static UnityEditor.AddressableAssets.Build.Layout.BuildLayout;
 using UnityEngine.Assertions;
 
-class GroupInfo : IEqualityComparer<GroupInfo>
+namespace USP.AddressablesBuildGraph
 {
-    #region Static Methods
-    public static bool operator ==(GroupInfo leftHand, GroupInfo rightHand)
+    class GroupInfo : IEqualityComparer<GroupInfo>
     {
-        var lhs = (object)leftHand;
-        var rhs = (object)rightHand;
-
-        if (lhs == rhs)
+        #region Static Methods
+        public static bool operator ==(GroupInfo leftHand, GroupInfo rightHand)
         {
-            return true;
+            var lhs = (object)leftHand;
+            var rhs = (object)rightHand;
+
+            if (lhs == rhs)
+            {
+                return true;
+            }
+
+            if (rhs == null || lhs == null)
+            {
+                return false;
+            }
+
+            return string.Compare(leftHand.guid, rightHand.guid, StringComparison.Ordinal) == 0;
         }
 
-        if (rhs == null || lhs == null)
+        public static bool operator !=(GroupInfo lhs, GroupInfo rhs)
         {
-            return false;
+            return !(lhs == rhs);
+        }
+        #endregion
+
+        #region Properties
+        public string name { get; }
+
+        public string guid { get; }
+
+        public bool isDefault { get; }
+
+        public bool readOnly { get; }
+
+        /// <summary>
+        /// Gets a unique set of asset bundles that are generated from the group by the build.
+        /// </summary>
+        public HashSet<AssetBundleInfo> AssetBundles { get; }
+        #endregion
+
+        #region Methods
+        #region Constructors
+        public GroupInfo(AddressableAssetGroup group) :
+            this(group.Name, group.Guid, group.Default, group.ReadOnly)
+        {
         }
 
-        return string.Compare(leftHand.guid, rightHand.guid, StringComparison.Ordinal) == 0;
-    }
-
-    public static bool operator !=(GroupInfo lhs, GroupInfo rhs)
-    {
-        return !(lhs == rhs);
-    }
-    #endregion
-
-    #region Properties
-    public string name { get; }
-
-    public string guid { get; }
-
-    public bool isDefault { get; }
-
-    public bool readOnly { get; }
-
-    /// <summary>
-    /// Gets a unique set of asset bundles that are generated from the group by the build.
-    /// </summary>
-    public HashSet<AssetBundleInfo> AssetBundles { get; }
-    #endregion
-
-    #region Methods
-    #region Constructors
-    public GroupInfo(AddressableAssetGroup group) :
-        this(group.Name, group.Guid, group.Default, group.ReadOnly)
-    {
-    }
-
-    public GroupInfo(string name, string guid, bool isDefault = false, bool readOnly = false)
-    {
-        this.name = name;
-        this.guid = guid;
-        this.isDefault = isDefault;
-        this.AssetBundles = new HashSet<AssetBundleInfo>();
-    }
-    #endregion
-
-    public override int GetHashCode()
-    {
-        return guid.GetHashCode();
-    }
-
-    public override bool Equals(object other)
-    {
-        if (other is not GroupInfo asset)
+        public GroupInfo(string name, string guid, bool isDefault = false, bool readOnly = false)
         {
-            return false;
+            this.name = name;
+            this.guid = guid;
+            this.isDefault = isDefault;
+            this.AssetBundles = new HashSet<AssetBundleInfo>();
+        }
+        #endregion
+
+        public override int GetHashCode()
+        {
+            return guid.GetHashCode();
         }
 
-        return this == asset;
-    }
+        public override bool Equals(object other)
+        {
+            if (other is not GroupInfo asset)
+            {
+                return false;
+            }
 
-    public int GetHashCode(GroupInfo obj)
-    {
-        return obj.GetHashCode();
-    }
+            return this == asset;
+        }
 
-    public bool Equals(GroupInfo lhs, GroupInfo rhs)
-    {
-        return lhs == rhs;
-    }
+        public int GetHashCode(GroupInfo obj)
+        {
+            return obj.GetHashCode();
+        }
 
-    public override string ToString()
-    {
-        return name;
+        public bool Equals(GroupInfo lhs, GroupInfo rhs)
+        {
+            return lhs == rhs;
+        }
+
+        public override string ToString()
+        {
+            return name;
+        }
+        #endregion
     }
-    #endregion
 }
