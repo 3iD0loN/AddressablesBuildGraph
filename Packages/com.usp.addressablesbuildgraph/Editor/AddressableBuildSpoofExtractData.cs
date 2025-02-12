@@ -42,6 +42,15 @@ namespace USP.AddressablesBuildGraph
 
             var settings = AddressableAssetSettingsDefaultObject.Settings;
 
+            if (settings == null)
+            {
+                aaBuildContext = default;
+                extractDataTask = default;
+
+                // Do nothing else.
+                return ReturnCode.MissingRequiredObjects;
+            }
+
             var bundleInputDefinitions = new List<AssetBundleBuild>();
             var bundleNameToGroupGuid = new Dictionary<string, string>();
             var assetEntries = new List<AddressableAssetEntry>();
