@@ -31,7 +31,7 @@ using UnityEngine.Assertions;
 
 namespace USP.AddressablesBuildGraph
 {
-    class GroupInfo : IEqualityComparer<GroupInfo>
+    public class GroupInfo : IEqualityComparer<GroupInfo>
     {
         #region Static Methods
         public static bool operator ==(GroupInfo leftHand, GroupInfo rightHand)

@@ -31,7 +31,7 @@ using UnityEngine.Assertions;
 
 namespace USP.AddressablesBuildGraph
 {
-    class AssetInfo : IEqualityComparer<AssetInfo>
+    public class AssetInfo : IEqualityComparer<AssetInfo>
     {
         #region Static Methods
         public static AssetInfo Create(GUID assetGuid, IReadOnlyDictionary<GUID, List<string>> assetGuidsToArchiveFile, AddressableAssetSettings settings)

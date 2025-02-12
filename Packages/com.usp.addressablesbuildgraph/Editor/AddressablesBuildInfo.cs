@@ -31,7 +31,7 @@ using UnityEngine.Assertions;
 
 namespace USP.AddressablesBuildGraph
 {
-    class AddressablesBuildInfo
+    public class AddressablesBuildInfo
     {
         #region Static Methods
         public static void Create(AddressableAssetsBuildContext aaBuildContext,
