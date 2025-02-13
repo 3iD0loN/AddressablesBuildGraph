@@ -1,33 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
-using UnityEngine;
-using UnityEngine.AddressableAssets.Initialization;
-using UnityEngine.AddressableAssets.ResourceLocators;
-
-using UnityEditor;
-using UnityEditor.AddressableAssets;
-using UnityEditor.AddressableAssets.Build;
-using UnityEditor.AddressableAssets.Build.BuildPipelineTasks;
-using UnityEditor.AddressableAssets.Build.DataBuilders;
 using UnityEditor.AddressableAssets.Settings;
-using UnityEditor.AddressableAssets.Settings.GroupSchemas;
-using UnityEditor.Build.Pipeline;
-using UnityEditor.Build.Pipeline.Interfaces;
-using UnityEditor.Build.Pipeline.Tasks;
-using UnityEditor.Build.Content;
-using UnityEngine.Serialization;
-using UnityEngine.U2D;
-using UnityEngine.AddressableAssets;
-using UnityEditor.VersionControl;
-using UnityEditor.Build.Utilities;
-using System.Runtime.Remoting.Contexts;
-using NUnit.Framework.Internal.Commands;
-using NUnit.Framework;
-using static UnityEditor.AddressableAssets.Build.Layout.BuildLayout;
-using UnityEngine.Assertions;
 
 namespace USP.AddressablesBuildGraph
 {
@@ -49,7 +23,7 @@ namespace USP.AddressablesBuildGraph
                 return false;
             }
 
-            return string.Compare(leftHand.guid, rightHand.guid, StringComparison.Ordinal) == 0;
+            return string.Compare(leftHand.Guid, rightHand.Guid, StringComparison.Ordinal) == 0;
         }
 
         public static bool operator !=(GroupInfo lhs, GroupInfo rhs)
@@ -59,13 +33,13 @@ namespace USP.AddressablesBuildGraph
         #endregion
 
         #region Properties
-        public string name { get; }
+        public string Guid { get; }
 
-        public string guid { get; }
+        public string Name { get; }
 
-        public bool isDefault { get; }
+        public bool IsDefault { get; }
 
-        public bool readOnly { get; }
+        public bool IsReadOnly { get; }
 
         /// <summary>
         /// Gets a unique set of asset bundles that are generated from the group by the build.
@@ -80,18 +54,19 @@ namespace USP.AddressablesBuildGraph
         {
         }
 
-        public GroupInfo(string name, string guid, bool isDefault = false, bool readOnly = false)
+        public GroupInfo(string name, string guid, bool isDefault = false, bool isReadOnly = false)
         {
-            this.name = name;
-            this.guid = guid;
-            this.isDefault = isDefault;
+            this.Guid = guid;
+            this.Name = name;
+            this.IsDefault = isDefault;
+            this.IsReadOnly = isReadOnly;
             this.AssetBundles = new HashSet<AssetBundleInfo>();
         }
         #endregion
 
         public override int GetHashCode()
         {
-            return guid.GetHashCode();
+            return Guid.GetHashCode();
         }
 
         public override bool Equals(object other)
@@ -116,7 +91,7 @@ namespace USP.AddressablesBuildGraph
 
         public override string ToString()
         {
-            return name;
+            return Name;
         }
         #endregion
     }

@@ -34,16 +34,21 @@ namespace USP.AddressablesBuildGraph
     public static partial class AddressableBuildSpoof
     {
         #region Static Methods
-        public static ReturnCode GetExtractData(
+        public static ReturnCode GetExtractData(AddressableAssetSettings settings,
             out AddressableAssetsBuildContext aaBuildContext,
             out ExtractDataTask extractDataTask)
         {
             DateTime buildStartTime = DateTime.Now;
 
-            var settings = AddressableAssetSettingsDefaultObject.Settings;
+            if (settings == null)
+            {
+                settings = AddressableAssetSettingsDefaultObject.Settings;
+            }
 
             if (settings == null)
             {
+                // NOTE: Should we trace an error here?
+
                 aaBuildContext = default;
                 extractDataTask = default;
 

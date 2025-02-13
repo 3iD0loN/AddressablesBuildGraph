@@ -1,33 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-using UnityEngine;
-using UnityEngine.AddressableAssets.Initialization;
-using UnityEngine.AddressableAssets.ResourceLocators;
 
 using UnityEditor;
-using UnityEditor.AddressableAssets;
-using UnityEditor.AddressableAssets.Build;
-using UnityEditor.AddressableAssets.Build.BuildPipelineTasks;
-using UnityEditor.AddressableAssets.Build.DataBuilders;
 using UnityEditor.AddressableAssets.Settings;
-using UnityEditor.AddressableAssets.Settings.GroupSchemas;
-using UnityEditor.Build.Pipeline;
-using UnityEditor.Build.Pipeline.Interfaces;
-using UnityEditor.Build.Pipeline.Tasks;
-using UnityEditor.Build.Content;
-using UnityEngine.Serialization;
-using UnityEngine.U2D;
-using UnityEngine.AddressableAssets;
-using UnityEditor.VersionControl;
-using UnityEditor.Build.Utilities;
-using System.Runtime.Remoting.Contexts;
-using NUnit.Framework.Internal.Commands;
-using NUnit.Framework;
-using static UnityEditor.AddressableAssets.Build.Layout.BuildLayout;
-using UnityEngine.Assertions;
 
 namespace USP.AddressablesBuildGraph
 {
@@ -97,6 +72,7 @@ namespace USP.AddressablesBuildGraph
             return assetPath.EndsWith(".unity", StringComparison.OrdinalIgnoreCase);
         }
 
+        #region Operators
         public static bool operator ==(AssetInfo leftHand, AssetInfo rightHand)
         {
             var lhs = (object)leftHand;
@@ -120,6 +96,7 @@ namespace USP.AddressablesBuildGraph
             return !(lhs == rhs);
         }
         #endregion
+        #endregion
 
         #region Properties
         public string Guid { get; }
@@ -128,7 +105,7 @@ namespace USP.AddressablesBuildGraph
 
         public string Address { get; }
 
-        public bool IsAddressable => string.IsNullOrEmpty(Address);
+        public bool IsAddressable => !string.IsNullOrEmpty(Address);
 
         public bool IsReadOnly { get; }
 
@@ -138,16 +115,60 @@ namespace USP.AddressablesBuildGraph
 
         public HashSet<string> Labels { get; }
 
-        public HashSet<AssetInfo> AssetDependents { get; }
+        public HashSet<AssetInfo> DependentAssets { get; }
 
+        /// <summary>
+        /// Gets the assets that that this asset references; the assets that this asset is dependent on.
+        /// </summary>
         public HashSet<AssetInfo> AssetDependencies { get; }
-
-        public bool IsDuplicate => Bundles.Count > 1;
 
         /// <summary>
         /// Gets a unique set of all asset bundles that this asset is packed into.
         /// </summary>
         public HashSet<AssetBundleInfo> Bundles { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the asset is being duplicated in multiple asset bundles.
+        /// </summary>
+        public bool IsDuplicate => Bundles.Count > 1;
+        
+        /// <summary>
+        /// A value indicating whether or not the asset is a root for a subtree of assets implicitly pulled into the build.
+        /// </summary>
+        public bool IsImplicitRoot
+        {
+            get
+            {
+                // If this asset is addressable, then it is an asset that is explicitly pulled into the build.
+                // If this asset is explicitly defined in the build, then:
+                if (IsAddressable)
+                {
+                    // It is not an the root of an implicit graph.
+                    return false;
+                }
+
+                // Otherwise, the asset is implicitly defined in the build.
+
+                // For each of the assets dependents, perform the following:
+                foreach (var assetDependent in DependentAssets)
+                {
+                    // If the asset dependent on this one is explicitly pulled into this build, then:
+                    if (assetDependent.IsAddressable)
+                    {
+                        // At least one of the dependent assets is explicit, so this asset is an root of implicit assets
+                        return true;
+                    }
+
+                    // Otherwise, the dependent asset is also implicit, and it is unclear whether this is an implicit root.
+                    // Move onto the next item until we find a match or exhaust all items.
+                }
+                
+                // All items have been exhausted, and there was no explicit asset that was dependent on this asset.
+
+                // This asset is not a root of implicit assets.
+                return false;
+            }
+        }
         #endregion
 
         #region Methods
@@ -177,7 +198,7 @@ namespace USP.AddressablesBuildGraph
             this.IsSubAsset = isSubAsset;
             this.IsSceneAsset = isScene ?? IsScene(this.FilePath);
 
-            this.AssetDependents = new HashSet<AssetInfo>();
+            this.DependentAssets = new HashSet<AssetInfo>();
             this.AssetDependencies = new HashSet<AssetInfo>();
             this.Bundles = new HashSet<AssetBundleInfo>();
         }
@@ -222,7 +243,7 @@ namespace USP.AddressablesBuildGraph
 
             this.AssetDependencies.Add(dependency);
 
-            dependency.AssetDependents.Add(this);
+            dependency.DependentAssets.Add(this);
         }
         #endregion
     }
