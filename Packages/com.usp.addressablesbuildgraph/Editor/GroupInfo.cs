@@ -71,12 +71,12 @@ namespace USP.AddressablesBuildGraph
 
         public override bool Equals(object other)
         {
-            if (other is not GroupInfo asset)
+            if (other is not GroupInfo group)
             {
                 return false;
             }
 
-            return this == asset;
+            return this == group;
         }
 
         public int GetHashCode(GroupInfo obj)
