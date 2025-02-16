@@ -12,6 +12,8 @@ namespace USP.AddressablesBuildGraph
     public class AssetInfo : IEqualityComparer<AssetInfo>
     {
         #region Constants
+        private const string SceneExtension = ".unity";
+
         private static readonly string ExteriorEditorFolder = $"{Path.DirectorySeparatorChar}Editor";
 
         private static readonly string InteriorEditorFolder = $"{ExteriorEditorFolder}{Path.DirectorySeparatorChar}";
@@ -31,7 +33,6 @@ namespace USP.AddressablesBuildGraph
             ".preset",
             ".asmdef"
         };
-
         #endregion
 
         #region Static Methods
@@ -95,14 +96,14 @@ namespace USP.AddressablesBuildGraph
 
         public static bool IsScene(string assetFilePath)
         {
-            return assetFilePath.EndsWith(".unity", StringComparison.OrdinalIgnoreCase);
+            return assetFilePath.EndsWith(SceneExtension, StringComparison.OrdinalIgnoreCase);
         }
 
         public bool IsValidPath(string filePath)
         {
             return IsPathValidForEntry(filePath) &&
-                !filePath.Contains("/resources/", StringComparison.OrdinalIgnoreCase) &&
-                !filePath.StartsWith("resources/", StringComparison.OrdinalIgnoreCase);
+                !filePath.Contains(InteriorResourcesFolder, StringComparison.OrdinalIgnoreCase) &&
+                !filePath.StartsWith(ExteriorResourcesFolder, StringComparison.OrdinalIgnoreCase);
         }
 
         internal static bool StringContains(string input, string value, StringComparison comp)
@@ -205,13 +206,19 @@ namespace USP.AddressablesBuildGraph
             string[] splitPath = pathLowerCase.Split(Path.DirectorySeparatorChar);
 
             if (splitPath.Length < 3)
+            {
                 return false;
+            }
 
             if (!String.Equals(splitPath[0], "packages", StringComparison.OrdinalIgnoreCase))
+            {
                 return false;
+            }
 
             if (String.Equals(splitPath[2], "package.json", StringComparison.OrdinalIgnoreCase))
+            {
                 return false;
+            }
 
             return true;
         }
