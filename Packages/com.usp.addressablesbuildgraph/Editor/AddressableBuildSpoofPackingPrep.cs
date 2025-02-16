@@ -1,33 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-using UnityEngine;
-using UnityEngine.AddressableAssets.Initialization;
-using UnityEngine.AddressableAssets.ResourceLocators;
 
 using UnityEditor;
-using UnityEditor.AddressableAssets;
-using UnityEditor.AddressableAssets.Build;
-using UnityEditor.AddressableAssets.Build.BuildPipelineTasks;
 using UnityEditor.AddressableAssets.Build.DataBuilders;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEditor.AddressableAssets.Settings.GroupSchemas;
-using UnityEditor.Build.Pipeline;
-using UnityEditor.Build.Pipeline.Interfaces;
-using UnityEditor.Build.Pipeline.Tasks;
-using UnityEditor.Build.Content;
-using UnityEngine.Serialization;
-using UnityEngine.U2D;
-using UnityEngine.AddressableAssets;
-using UnityEditor.VersionControl;
-using UnityEditor.Build.Utilities;
-using System.Runtime.Remoting.Contexts;
-using NUnit.Framework.Internal.Commands;
-using NUnit.Framework;
-using static UnityEditor.AddressableAssets.Build.Layout.BuildLayout;
-using UnityEngine.Assertions;
 
 namespace USP.AddressablesBuildGraph
 {
