@@ -1,13 +1,39 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 
 using UnityEditor;
+using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
+using UnityEditor.Build.Utilities;
 
 namespace USP.AddressablesBuildGraph
 {
     public class AssetInfo : IEqualityComparer<AssetInfo>
     {
+        #region Constants
+        private static readonly string ExteriorEditorFolder = $"{Path.DirectorySeparatorChar}Editor";
+
+        private static readonly string InteriorEditorFolder = $"{ExteriorEditorFolder}{Path.DirectorySeparatorChar}";
+
+        private static readonly string ExteriorResourcesFolder = $"{Path.DirectorySeparatorChar}resources";
+
+        private static readonly string InteriorResourcesFolder = $"{ExteriorEditorFolder}{Path.DirectorySeparatorChar}";
+
+        private static readonly HashSet<string> ExcludedExtensions = new HashSet<string>
+        {
+            ".cs",
+            ".js",
+            ".boo",
+            ".exe",
+            ".dll",
+            ".meta",
+            ".preset",
+            ".asmdef"
+        };
+
+        #endregion
+
         #region Static Methods
         public static AssetInfo Create(GUID assetGuid, IReadOnlyDictionary<GUID, List<string>> assetGuidsToArchiveFile, AddressableAssetSettings settings)
         {
@@ -67,9 +93,127 @@ namespace USP.AddressablesBuildGraph
             }
         }
 
-        private static bool IsScene(string assetPath)
+        public static bool IsScene(string assetFilePath)
         {
-            return assetPath.EndsWith(".unity", StringComparison.OrdinalIgnoreCase);
+            return assetFilePath.EndsWith(".unity", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public bool IsValidPath(string filePath)
+        {
+            return IsPathValidForEntry(filePath) &&
+                !filePath.Contains("/resources/", StringComparison.OrdinalIgnoreCase) &&
+                !filePath.StartsWith("resources/", StringComparison.OrdinalIgnoreCase);
+        }
+
+        internal static bool StringContains(string input, string value, StringComparison comp)
+        {
+#if NET_UNITY_4_8
+            return input.Contains(value, comp);
+#else
+            return input.Contains(value);
+#endif
+        }
+
+        public static bool IsPathValidForEntry(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                return false;
+            }
+
+            if (Path.DirectorySeparatorChar != '\\' && filePath.Contains('\\'))
+            {
+                filePath = filePath.Replace('\\', Path.DirectorySeparatorChar);
+            }
+
+            if (Path.DirectorySeparatorChar != '/' && filePath.Contains('/'))
+            {
+                filePath = filePath.Replace('/', Path.DirectorySeparatorChar);
+            }
+
+            if (!filePath.StartsWith("Assets", StringComparison.OrdinalIgnoreCase) &&
+                !IsPathValidPackageAsset(filePath))
+            {
+                return false;
+            }
+
+            string fileExtension = Path.GetExtension(filePath);
+            if (string.IsNullOrEmpty(fileExtension))
+            {
+                if (filePath == "Assets")
+                {
+                    return false;
+                }
+
+                int editorIndex = filePath.IndexOf(ExteriorEditorFolder, StringComparison.OrdinalIgnoreCase);
+                if (editorIndex != -1)
+                {
+                    int length = filePath.Length;
+                    int folderLength = ExteriorEditorFolder.Length;
+
+                    if (editorIndex == length - folderLength)
+                    {
+                        return false;
+                    }
+
+                    if (filePath[editorIndex + folderLength] == Path.DirectorySeparatorChar)
+                    {
+                        return false;
+                    }
+
+                    // Could still have something like Assets/editorthings/Editor/things, but less likely
+                    if (StringContains(filePath, InteriorEditorFolder, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+
+                if (String.Equals(filePath, CommonStrings.UnityEditorResourcePath, StringComparison.Ordinal) ||
+                    String.Equals(filePath, CommonStrings.UnityDefaultResourcePath, StringComparison.Ordinal) ||
+                    String.Equals(filePath, CommonStrings.UnityBuiltInExtraPath, StringComparison.Ordinal))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // asset type
+                if (StringContains(filePath, InteriorEditorFolder, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                if (ExcludedExtensions.Contains(fileExtension))
+                {
+                    return false;
+                }
+            }
+
+            var settings = AddressableAssetSettingsDefaultObject.SettingsExists ?
+                AddressableAssetSettingsDefaultObject.Settings : null;
+
+            if (settings != null && filePath.StartsWith(settings.ConfigFolder, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        internal static bool IsPathValidPackageAsset(string pathLowerCase)
+        {
+            string[] splitPath = pathLowerCase.Split(Path.DirectorySeparatorChar);
+
+            if (splitPath.Length < 3)
+                return false;
+
+            if (!String.Equals(splitPath[0], "packages", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            if (String.Equals(splitPath[2], "package.json", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            return true;
         }
 
         #region Operators
@@ -167,6 +311,14 @@ namespace USP.AddressablesBuildGraph
 
                 // This asset is not a root of implicit assets.
                 return false;
+            }
+        }
+
+        public bool IsValid
+        {
+            get
+            {
+                return IsValidPath(FilePath);
             }
         }
         #endregion
