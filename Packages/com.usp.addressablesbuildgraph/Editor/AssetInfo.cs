@@ -106,7 +106,7 @@ namespace USP.AddressablesBuildGraph
                 !filePath.StartsWith(ExteriorResourcesFolder, StringComparison.OrdinalIgnoreCase);
         }
 
-        internal static bool StringContains(string input, string value, StringComparison comp)
+        private static bool StringContains(string input, string value, StringComparison comp)
         {
 #if NET_UNITY_4_8
             return input.Contains(value, comp);
@@ -226,20 +226,7 @@ namespace USP.AddressablesBuildGraph
         #region Operators
         public static bool operator ==(AssetInfo leftHand, AssetInfo rightHand)
         {
-            var lhs = (object)leftHand;
-            var rhs = (object)rightHand;
-
-            if (lhs == rhs)
-            {
-                return true;
-            }
-
-            if (rhs == null || lhs == null)
-            {
-                return false;
-            }
-
-            return string.Compare(leftHand.Guid, rightHand.Guid, StringComparison.Ordinal) == 0;
+            return StringComparer.Ordinal.Equals(leftHand.Guid, rightHand.Guid);
         }
 
         public static bool operator !=(AssetInfo lhs, AssetInfo rhs)
@@ -375,7 +362,7 @@ namespace USP.AddressablesBuildGraph
                 return false;
             }
 
-            return this == asset;
+            return Equals(this, asset);
         }
 
         public int GetHashCode(AssetInfo obj)

@@ -76,7 +76,7 @@ namespace USP.AddressablesBuildGraph
                 return false;
             }
 
-            return this == group;
+            return Equals(this, group);
         }
 
         public int GetHashCode(GroupInfo obj)

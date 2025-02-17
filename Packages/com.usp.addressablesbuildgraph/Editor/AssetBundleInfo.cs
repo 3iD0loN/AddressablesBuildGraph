@@ -65,7 +65,7 @@ namespace USP.AddressablesBuildGraph
                 return false;
             }
 
-            return this == assetBundle;
+            return Equals(this, assetBundle);
         }
 
         public int GetHashCode(AssetBundleInfo obj)
