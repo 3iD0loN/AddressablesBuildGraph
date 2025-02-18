@@ -226,6 +226,19 @@ namespace USP.AddressablesBuildGraph
         #region Operators
         public static bool operator ==(AssetInfo leftHand, AssetInfo rightHand)
         {
+            var lhs = (object)leftHand;
+            var rhs = (object)rightHand;
+
+            if (lhs == rhs)
+            {
+                return true;
+            }
+
+            if (rhs == null || lhs == null)
+            {
+                return false;
+            }
+
             return StringComparer.Ordinal.Equals(leftHand.Guid, rightHand.Guid);
         }
 
