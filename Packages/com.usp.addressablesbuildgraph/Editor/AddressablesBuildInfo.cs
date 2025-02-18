@@ -6,6 +6,7 @@ using UnityEditor.AddressableAssets.Settings;
 using UnityEditor.Build.Pipeline;
 using UnityEditor.Build.Pipeline.Interfaces;
 using UnityEditor.Build.Content;
+using System;
 
 namespace USP.AddressablesBuildGraph
 {
@@ -47,10 +48,6 @@ namespace USP.AddressablesBuildGraph
                         bundleInfo = bundlekey;
                         buildInfo.AssetBundles.Add(bundleInfo);
                     }
-                    else
-                    {
-                        bundlekey = bundleInfo;
-                    }
 
                     // Get the current list of assets that are in associated with the bundle.
                     List<ObjectIdentifier> objectIdentifierList = objectIdentifierEnumerator.Current;
@@ -70,30 +67,27 @@ namespace USP.AddressablesBuildGraph
                         {
                             // Create a proper instance of the asset info.
                             asset = AssetInfo.Create(objectIdentifier.guid, bundleWriteData.AssetToFiles, aaBuildContext.Settings);
-                            
+
                             // Add the asset to the unique set of assets used to generate the build.
                             buildInfo.Assets.Add(asset);
                         }
-                        else
-                        {
-                            assetKey = asset;
-                        }
+
+                        assetKey = asset;
+                        asset = null;
 
                         // Determine if this is already an asset that matches an asset in the
                         // unique set of assets that are packed into the bundle.
                         // If there is no asset that matches, then:
                         if (!bundleInfo.Assets.TryGetValue(assetKey, out asset))
                         {
-                            // Cache the reference
                             asset = assetKey;
 
                             // Add the asset to unique set of assets that are packed into the bundle.
                             bundleInfo.Assets.Add(asset);
                         }
-                        else
-                        {
-                            assetKey = asset;
-                        }
+
+                        bundlekey = bundleInfo;
+                        bundleInfo = null;
 
                         // Determine if this is already an bundle that matches a bundle in the
                         // unique set of asset bundles that the asset is packed in.
@@ -106,10 +100,6 @@ namespace USP.AddressablesBuildGraph
                             // Add the bundle to the unique set of asset bundles that the asset is packed in.
                             // (Multiple bundles indicate that the asset is being duplicated).
                             asset.Bundles.Add(bundleInfo);
-                        }
-                        else
-                        {
-                            bundlekey = bundleInfo;
                         }
                     }
                 }
