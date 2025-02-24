@@ -245,7 +245,9 @@
       "version": "file:com.usp.addressablesbuildgraph",
       "depth": 0,
       "source": "embedded",
-      "dependencies": {}
+      "dependencies": {
+        "com.unity.addressables": "2.2.2"
+      }
     },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",
