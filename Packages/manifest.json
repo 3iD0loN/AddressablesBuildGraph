@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "com.github-glitchenzo.nugetforunity": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
-    "com.unity.addressables": "2.2.2",
+    "com.unity.addressables": "https://github.cds.internal.unity3d.com/joel-barba/Addressables.git?path=/AddressablesDemo/Packages/com.unity.addressables#GWINC_project_changes",
     "com.unity.ai.navigation": "2.0.4",
     "com.unity.collab-proxy": "2.6.0",
     "com.unity.ide.rider": "3.0.31",
