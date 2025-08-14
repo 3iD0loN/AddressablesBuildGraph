@@ -19,7 +19,6 @@ namespace USP.AddressablesBuildGraph
             Action<int> groupProcessed = null)
         {
             var buildScript = settings.ActivePlayerDataBuilder as BuildScriptPackedMode;
-            var packingKeyGenerator = buildScript != null ? buildScript.PackingKeyGenerator : new PackingKeyGenerator();
 
             // For every Addressables group, perform the folowing:
             for (int groupIndex = 0; groupIndex < settings.groups.Count; ++groupIndex)
@@ -28,7 +27,6 @@ namespace USP.AddressablesBuildGraph
                 AddressableAssetGroup group = settings.groups[groupIndex];
 
                 PopulateFromPackingPreparation(group,
-                    packingKeyGenerator,
                     ref bundleInputDefinitions,
                     ref bundleNameToGroupGuid,
                     ref assetEntries);
@@ -38,7 +36,6 @@ namespace USP.AddressablesBuildGraph
         }
 
         private static bool PopulateFromPackingPreparation(AddressableAssetGroup group,
-            PackingKeyGenerator packingKeyGenerator,
             ref List<AssetBundleBuild> bundleInputDefinitions,
             ref Dictionary<string, string> bundleNameToGroupGuid,
             ref List<AddressableAssetEntry> assetEntries)
@@ -68,7 +65,7 @@ namespace USP.AddressablesBuildGraph
 
             // Request that the default build script generate bundle input definitions.
             List<AddressableAssetEntry> processedEntries = BuildScriptPackedMode.PrepGroupBundlePacking(
-                group, bundleInputDefs, schema, packingKeyGenerator);
+                group, bundleInputDefs, schema);
 
             // Compares bundle input definitions against the map of bundle names.
             // Corrects any duplicates and updates the map of bundle names with new entries.
