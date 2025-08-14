@@ -6,10 +6,12 @@ using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEditor.Build.Utilities;
+using UnityEngine;
 
 namespace USP.AddressablesBuildGraph
 {
-    public class AssetInfo : IEqualityComparer<AssetInfo>
+    [Serializable]
+    public class AssetInfo : IEqualityComparer<AssetInfo>, ISerializationCallbackReceiver
     {
         #region Constants
         private const string SceneExtension = ".unity";
@@ -249,34 +251,71 @@ namespace USP.AddressablesBuildGraph
         #endregion
         #endregion
 
+        #region Fields
+        [SerializeReference]
+        private string guid;
+
+        [SerializeReference]
+        private string filePath;
+
+        [SerializeReference]
+        private string address;
+
+        public bool isReadOnly;
+
+        [SerializeReference]
+        private bool isSubAsset;
+
+        [SerializeReference]
+        private bool isSceneAsset;
+
+        [SerializeReference]
+        private string[] labels;
+
+        [SerializeReference]
+        private AssetInfo[] dependentAssets;
+
+        /// <summary>
+        /// Rhe assets that that this asset references; the assets that this asset is dependent on.
+        /// </summary>
+        [SerializeReference]
+        private AssetInfo[] assetDependencies;
+
+        /// <summary>
+        /// A unique set of all asset bundles that this asset is packed into.
+        /// </summary>
+        [SerializeReference]
+        private AssetBundleInfo[] bundles;
+        #endregion
+
         #region Properties
-        public string Guid { get; }
+        public string Guid => guid;
 
-        public string FilePath { get; }
+        public string FilePath => filePath;
 
-        public string Address { get; }
+        public string Address => address;
 
         public bool IsAddressable => !string.IsNullOrEmpty(Address);
 
-        public bool IsReadOnly { get; }
+        public bool IsReadOnly => isReadOnly;
 
-        public bool IsSubAsset { get; }
+        public bool IsSubAsset => isSubAsset;
 
-        public bool IsSceneAsset { get; }
+        public bool IsSceneAsset => isSceneAsset;
 
-        public HashSet<string> Labels { get; }
+        public HashSet<string> Labels { get; private set; }
 
-        public HashSet<AssetInfo> DependentAssets { get; }
+        public HashSet<AssetInfo> DependentAssets { get; private set; }
 
         /// <summary>
         /// Gets the assets that that this asset references; the assets that this asset is dependent on.
         /// </summary>
-        public HashSet<AssetInfo> AssetDependencies { get; }
+        public HashSet<AssetInfo> AssetDependencies { get; private set; }
 
         /// <summary>
         /// Gets a unique set of all asset bundles that this asset is packed into.
         /// </summary>
-        public HashSet<AssetBundleInfo> Bundles { get; }
+        public HashSet<AssetBundleInfo> Bundles { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the asset is being duplicated in multiple asset bundles.
@@ -349,13 +388,13 @@ namespace USP.AddressablesBuildGraph
 
         public AssetInfo(string guid, string filePath, string address = null, HashSet<string> labels = null, bool readOnly = false, bool isSubAsset = false, bool? isScene = null)
         {
-            this.Guid = guid ?? AssetDatabase.AssetPathToGUID(filePath);
-            this.FilePath = filePath ?? AssetDatabase.GUIDToAssetPath(guid);
-            this.Address = address;
+            this.guid = guid ?? AssetDatabase.AssetPathToGUID(filePath);
+            this.filePath = filePath ?? AssetDatabase.GUIDToAssetPath(guid);
+            this.address = address;
             this.Labels = labels != null ? new HashSet<string>(labels) : new HashSet<string>();
-            this.IsReadOnly = readOnly;
-            this.IsSubAsset = isSubAsset;
-            this.IsSceneAsset = isScene ?? IsScene(this.FilePath);
+            this.isReadOnly = readOnly;
+            this.isSubAsset = isSubAsset;
+            this.isSceneAsset = isScene ?? IsScene(this.FilePath);
 
             this.DependentAssets = new HashSet<AssetInfo>();
             this.AssetDependencies = new HashSet<AssetInfo>();
@@ -390,7 +429,7 @@ namespace USP.AddressablesBuildGraph
 
         public override string ToString()
         {
-            return FilePath;
+            return EditorJsonUtility.ToJson(this, true);
         }
 
         public void DependsOn(AssetInfo dependency)
@@ -403,6 +442,29 @@ namespace USP.AddressablesBuildGraph
             this.AssetDependencies.Add(dependency);
 
             dependency.DependentAssets.Add(this);
+        }
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+            labels = new string[Labels.Count];
+            Labels.CopyTo(labels);
+
+            dependentAssets = new AssetInfo[DependentAssets.Count];
+            DependentAssets.CopyTo(dependentAssets);
+
+            assetDependencies = new AssetInfo[AssetDependencies.Count];
+            AssetDependencies.CopyTo(assetDependencies);
+
+            bundles = new AssetBundleInfo[Bundles.Count];
+            Bundles.CopyTo(bundles);
+        }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            Labels = new HashSet<string>(labels);
+            DependentAssets = new HashSet<AssetInfo>(dependentAssets);
+            AssetDependencies = new HashSet<AssetInfo>(assetDependencies);
+            Bundles = new HashSet<AssetBundleInfo>(bundles);
         }
         #endregion
     }

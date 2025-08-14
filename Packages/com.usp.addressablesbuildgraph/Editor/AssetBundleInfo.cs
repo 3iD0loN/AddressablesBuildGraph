@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
 
 namespace USP.AddressablesBuildGraph
 {
-    public class AssetBundleInfo : IEqualityComparer<AssetBundleInfo>
+    [Serializable]
+    public class AssetBundleInfo : IEqualityComparer<AssetBundleInfo>, ISerializationCallbackReceiver
     {
         #region Static Methods
         public static bool operator ==(AssetBundleInfo leftHand, AssetBundleInfo rightHand)
@@ -30,27 +33,51 @@ namespace USP.AddressablesBuildGraph
         }
         #endregion
 
-        #region Properties
-        public string AssetBundleName { get; }
+        #region Fields
+        [SerializeReference]
+        private string assetBundleName;
 
-        //public string assetBundleVariant { get; }
+        //[SerializeReference]
+        //private string assetBundleVariant { get; }
+
+        /// <summary>
+        /// A unique set of all assets that are packed into a bundle.
+        /// </summary>
+        [SerializeReference]
+        private AssetInfo[] assets;
+
+        /// <summary>
+        /// The Addressbles group used to generate the asset bundle.
+        /// </summary>
+        [SerializeReference]
+        private GroupInfo group;
+        #endregion
+
+        #region Properties
+        public string AssetBundleName => assetBundleName;
+
+        //public string AssetBundleVariant => assetBundleVariant;
 
         /// <summary>
         /// Gets a unique set of all assets that are packed into a bundle.
         /// </summary>
-        public HashSet<AssetInfo> Assets { get; }
+        public HashSet<AssetInfo> Assets { get; private set; }
 
         /// <summary>
-        /// Gets the Addressbles group used to generate the asset bundle.
+        /// Gets the Addressables group used to generate the asset bundle.
         /// </summary>
-        public GroupInfo Group { get; set; }
+        public GroupInfo Group
+        {
+            get => group;
+            set => group = value;
+        }
         #endregion
 
         #region Methods
-        public AssetBundleInfo(string assetBundleName)
+        public AssetBundleInfo(string assetBundleName, HashSet<AssetInfo> assets = null)
         {
-            this.AssetBundleName = assetBundleName;
-            this.Assets = new HashSet<AssetInfo>();
+            this.assetBundleName = assetBundleName;
+            this.Assets = assets != null ? new HashSet<AssetInfo>(assets) : new HashSet<AssetInfo>();
         }
 
         public override int GetHashCode()
@@ -80,7 +107,18 @@ namespace USP.AddressablesBuildGraph
 
         public override string ToString()
         {
-            return AssetBundleName;
+            return EditorJsonUtility.ToJson(this, true);
+        }
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+            assets = new AssetInfo[Assets.Count];
+            Assets.CopyTo(assets);
+        }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            Assets = new HashSet<AssetInfo>(assets);
         }
         #endregion
     }

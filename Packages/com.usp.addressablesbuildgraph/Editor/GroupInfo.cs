@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 
+using UnityEditor;
 using UnityEditor.AddressableAssets.Settings;
+using UnityEngine;
 
 namespace USP.AddressablesBuildGraph
 {
-    public class GroupInfo : IEqualityComparer<GroupInfo>
+    [Serializable]
+    public class GroupInfo : IEqualityComparer<GroupInfo>, ISerializationCallbackReceiver
     {
         #region Static Methods
         public static bool operator ==(GroupInfo leftHand, GroupInfo rightHand)
@@ -32,35 +35,55 @@ namespace USP.AddressablesBuildGraph
         }
         #endregion
 
+        #region Fields
+        [SerializeReference]
+        private string guid;
+
+        [SerializeReference]
+        private string name;
+
+        [SerializeReference]
+        private bool isDefault;
+
+        [SerializeReference]
+        private bool isReadOnly;
+
+        /// <summary>
+        ///  A unique set of asset bundles that are generated from the group by the build.
+        /// </summary>
+        [SerializeReference]
+        private AssetBundleInfo[] assetBundles;
+        #endregion
+
         #region Properties
-        public string Guid { get; }
+        public string Guid => guid;
 
-        public string Name { get; }
+        public string Name => name;
 
-        public bool IsDefault { get; }
+        public bool IsDefault => isDefault;
 
-        public bool IsReadOnly { get; }
+        public bool IsReadOnly => isReadOnly;
 
         /// <summary>
         /// Gets a unique set of asset bundles that are generated from the group by the build.
         /// </summary>
-        public HashSet<AssetBundleInfo> AssetBundles { get; }
+        public HashSet<AssetBundleInfo> AssetBundles { get; private set; }
         #endregion
 
         #region Methods
         #region Constructors
         public GroupInfo(AddressableAssetGroup group) :
-            this(group.Name, group.Guid, group.Default, group.ReadOnly)
+            this(group.Name, group.Guid, group.Default, group.ReadOnly, null)
         {
         }
 
-        public GroupInfo(string name, string guid, bool isDefault = false, bool isReadOnly = false)
+        public GroupInfo(string name, string guid, bool isDefault = false, bool isReadOnly = false, HashSet<AssetBundleInfo> assetBundles = null)
         {
-            this.Guid = guid;
-            this.Name = name;
-            this.IsDefault = isDefault;
-            this.IsReadOnly = isReadOnly;
-            this.AssetBundles = new HashSet<AssetBundleInfo>();
+            this.guid = guid;
+            this.name = name;
+            this.isDefault = isDefault;
+            this.isReadOnly = isReadOnly;
+            this.AssetBundles = assetBundles != null ? new HashSet<AssetBundleInfo>(assetBundles) : new HashSet<AssetBundleInfo>();
         }
         #endregion
 
@@ -91,7 +114,18 @@ namespace USP.AddressablesBuildGraph
 
         public override string ToString()
         {
-            return Name;
+            return EditorJsonUtility.ToJson(this, true);
+        }
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+            assetBundles = new AssetBundleInfo[AssetBundles.Count];
+            AssetBundles.CopyTo(assetBundles);
+        }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            AssetBundles = new HashSet<AssetBundleInfo>(assetBundles);
         }
         #endregion
     }
